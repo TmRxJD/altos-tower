@@ -59,8 +59,34 @@ impl Course {
             && self.chasm_lip(start).is_some();
         // Random weights alone can starve a family for an entire run. Give an
         // overdue canyon a safe available slot, retaining every placement gate.
-        if gap_eligible && start - self.last_chasm > 35000. {
-            return 3;
+        let hazard = self.next_hazard_site(start + 1300., start + 11000.);
+        // Prefer the overdue canyon, but do not starve walls indefinitely when
+        // its safe lip never becomes available. The wall's own terrain,
+        // tension and recent-family gates still apply after this long grace.
+        if start - self.last_wall_site > 40000.
+            && (start - self.last_chasm <= 35000.
+                || self.last_wall_site < self.last_chasm
+                || start - self.last_wall_site > 120000.)
+            && extended.0 > -0.07
+            && extended.1 < 0.68
+            && self.tension < 0.75
+            && !self.history.iter().rev().take(2).any(|&k| k == 9)
+        {
+            return 9;
+        }
+        if start - self.last_chasm > 35000. {
+            if gap_eligible {
+                return 3;
+            }
+            if start - self.last_hazard > 40000. && hazard.is_some() {
+                return 1;
+            }
+            // Stop refreshing protected flight routes while an overdue canyon
+            // waits for a valid macro window. The ground keeps rolling downhill.
+            return 0;
+        }
+        if start - self.last_hazard > 20000. {
+            return if hazard.is_some() { 1 } else { 0 };
         }
         let weights = FAMILIES.map(|family| {
             if self.history.iter().rev().take(2).any(|&k| k == family) {
@@ -69,7 +95,7 @@ impl Course {
             match family {
                 0 => 1.0,
                 1 => {
-                    if self.tension < 0.7 {
+                    if self.tension < 0.7 && hazard.is_some() {
                         2.0
                     } else {
                         0.
@@ -150,6 +176,7 @@ impl Course {
             if self.rock_allowed(cx, width) {
                 self.feature(fs, "rock", cx, self.sample(cx).0 - 22., width, 0.);
                 spawned = true;
+                self.last_hazard = cx;
             }
             cx += self.range(120., 185.);
         }
@@ -301,6 +328,7 @@ impl Course {
     }
 
     fn wall_graph(&mut self, fs: &mut Vec<Feature>, start: f64) {
+        self.last_wall_site = start;
         // Variant selects the visible face profile, not a fixed route recipe.
         let choice = (self.rand() * 3.) as u8;
         let variant = if self.last_wall_route == 99 {
@@ -344,7 +372,16 @@ impl Course {
         let canopy_count = if canonical {
             2
         } else {
-            (self.rand() * 4.) as usize
+            let ordinal = self.wall_variations[variant as usize];
+            self.wall_variations[variant as usize] += 1;
+            let cycle = ((variant as i64) << 32) | i64::from(ordinal / 4);
+            let offset = (hash(self.seed, cycle, 0xca1) * 4.) as u32 % 4;
+            let direction = if hash(self.seed, cycle, 0xca2) < 0.5 {
+                1
+            } else {
+                3
+            };
+            ((offset + (ordinal % 4) * direction) % 4) as usize
         };
         let cable = canonical || (!second_face && canopy_count == 0) || self.rand() < 0.58;
         let roof = !canonical && self.rand() < 0.48;
@@ -437,6 +474,7 @@ impl Course {
         // Reserve both ground rewards before spending the shared route budget
         // on optional elevated coins.
         self.ground_group(fs, span - 650.);
+        self.rocks(fs, 2400., 2);
         match family {
             0 | 2 => {
                 let width = self.range(4700., 5000.);
@@ -446,10 +484,8 @@ impl Course {
             }
             5 => {
                 self.village(fs, 0., span);
-                self.rocks(fs, 1250., 2);
             }
             _ => {
-                self.rocks(fs, 1250., 2);
                 self.rocks(fs, 3800., 2);
             }
         }
@@ -504,7 +540,9 @@ impl Course {
                         self.range(4300., 5500.).max(end)
                     }
                     1 => {
-                        let hazard = self.next_hazard_site(start + 1300.);
+                        let hazard = self
+                            .next_hazard_site(start + 1300., start + 11000.)
+                            .unwrap();
                         self.range(3300., 4500.).max(hazard - start + 3000.)
                     }
                     _ => self.range(2000., 3400.),
@@ -531,10 +569,12 @@ impl Course {
                 self.ground_group(fs, start + 350.);
                 match family {
                     1 => {
-                        let hazard = self.next_hazard_site(start + 1300.);
+                        let hazard = self
+                            .next_hazard_site(start + 1300., start + 11000.)
+                            .unwrap();
                         // Keep the setup inside this site's span and generate
                         // actual macro samples before forecasting its jump.
-                        self.extend_terrain(hazard);
+                        self.ensure_terrain_through(hazard + 20000.);
                         let count = 2 + (self.rand() * 2.) as u32;
                         self.rocks(fs, hazard, count);
                         self.rocks(fs, start + span - 900., count);
@@ -574,6 +614,12 @@ impl Course {
                                 self.sample(lip - 650.).0 - 100.,
                                 width + 1600.,
                             );
+                        }
+                        self.reserve_landing(lip - 1400., lip - 40., 0.);
+                        for distance in [60., 700., 1400.] {
+                            let launch = lip - distance;
+                            let (ground, slope, _) = self.sample(launch);
+                            self.reserve_flight_landings(fs, launch, ground - 18., slope, 1.);
                         }
                     }
                     5 => self.village(fs, start, span),

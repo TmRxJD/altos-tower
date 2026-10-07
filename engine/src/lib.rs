@@ -921,6 +921,7 @@ mod baseline_tests {
         g
     }
     #[test]
+    #[cfg(feature = "private-reference")]
     fn reference_profiles_match_curated_signed_apk_fields() {
         let data: serde_json::Value =
             serde_json::from_str(include_str!("../../reference/alto-adventure-1.8.24.json"))

@@ -103,3 +103,8 @@ Current polish pass (2026-10-07): Classic portraits use a simple flat atlas; the
 
 Workshop balance is now deliberately authored: permanent upgrades cost522000 coins in total. The final tier of every upgrade requires completing all60 levels plus100km of subsequent normal Play, then paying its coin price. Existing upgrades and funds remain valid. Bunting breaks after3seconds of continuous contact; roof/balloon cables differ. Course supports have explicit attachment identities, and ordinary downhill curvature retains ground contact while actual crests can launch the rider. Exact native physics and generator formulas remain unverified; these changes are not presented as an extracted1:1 implementation.
 
+# Public validation
+
+Public CI runs the engine tests without private reference material. The optional
+`cargo test --manifest-path engine/Cargo.toml --features private-reference`
+comparison requires the locally extracted reference JSON and remains a local check.
