@@ -33,8 +33,11 @@ impl Course {
         }) && !self.gaps.iter().any(|&(a, b)| x > a - 400. && x < b + 900.)
     }
 
-    pub(super) fn next_hazard_site(&self, mut x: f64) -> f64 {
+    pub(super) fn next_hazard_site(&self, mut x: f64, limit: f64) -> Option<f64> {
         for _ in 0..128 {
+            if x > limit {
+                return None;
+            }
             let old = x;
             for band in &self.landings {
                 if band.height < 65. && x + 500. > band.left && x - 500. < band.right {
@@ -50,10 +53,10 @@ impl Course {
                 x += 500.;
             }
             if x == old {
-                break;
+                return Some(x);
             }
         }
-        x
+        None
     }
 
     pub(super) fn reserve_flight_landings(
@@ -112,7 +115,11 @@ impl Course {
                         break;
                     }
                     let (ground, slope, _) = self.sample(x);
-                    if !self.gap(x) && y + 18. >= ground && vy - vx * slope > 0. {
+                    if !self.gap(x)
+                        && old.1 + 18. <= self.sample(old.0).0 + 1.
+                        && y + 18. >= ground
+                        && vy - vx * slope > 0.
+                    {
                         self.reserve_landing(x - 200., x + 1000., 0.);
                         break;
                     }

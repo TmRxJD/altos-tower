@@ -91,7 +91,10 @@ impl Course {
     }
 
     pub(super) fn extend_terrain(&mut self, x: f64) {
-        while self.end < x + LOOK_AHEAD + TERRAIN_MARGIN {
+        self.ensure_terrain_through(x + LOOK_AHEAD + TERRAIN_MARGIN);
+    }
+    pub(super) fn ensure_terrain_through(&mut self, right: f64) {
+        while self.end < right {
             let x0 = self.end;
             let x1 = x0 + 500.;
             let (y0, m0) = self
