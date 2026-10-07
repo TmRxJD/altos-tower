@@ -1,0 +1,7 @@
+node_modules/
+dist/
+engine/target/
+src/wasm/
+test-results/
+playwright-report/
+*.log

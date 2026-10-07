@@ -1,0 +1,62 @@
+{
+  "Basic": {
+    "url": "art/basic.webp",
+    "source": "enemies/enemy-basic-md.webp"
+  },
+  "Fast": {
+    "url": "art/fast.webp",
+    "source": "enemies/enemy-fast-md.webp"
+  },
+  "Tank": {
+    "url": "art/tank.webp",
+    "source": "enemies/enemy-tank-md.webp"
+  },
+  "Ranged": {
+    "url": "art/ranged.webp",
+    "source": "enemies/enemy-ranged-md.webp"
+  },
+  "Protector": {
+    "url": "art/protector.webp",
+    "source": "enemies/enemy-protector-md.webp"
+  },
+  "Vampire": {
+    "url": "art/vampire.webp",
+    "source": "enemies/enemy-vampire-md.webp"
+  },
+  "Boss": {
+    "url": "art/boss.webp",
+    "source": "enemies/enemy-boss-md.webp"
+  },
+  "Ray": {
+    "url": "art/ray.webp",
+    "source": "enemies/enemy-ray-md.webp"
+  },
+  "Scatter": {
+    "url": "art/scatter.webp",
+    "source": "enemies/enemy-scatter-md.webp"
+  },
+  "Black Hole": {
+    "url": "art/black-hole.webp",
+    "source": "ultimate-weapons/weapon-black-hole-md.webp"
+  },
+  "Chrono Field": {
+    "url": "art/chrono-field.webp",
+    "source": "ultimate-weapons/weapon-chrono-field-md.webp"
+  },
+  "Death Wave": {
+    "url": "art/death-wave.webp",
+    "source": "ultimate-weapons/weapon-death-wave-md.webp"
+  },
+  "Chain Lightning": {
+    "url": "art/chain-lightning.webp",
+    "source": "ultimate-weapons/weapon-chain-lightning-md.webp"
+  },
+  "Swamp": {
+    "url": "art/swamp.webp",
+    "source": "ultimate-weapons/weapon-swamp-md.webp"
+  },
+  "Spotlight": {
+    "url": "art/spotlight.webp",
+    "source": "ultimate-weapons/weapon-spotlight-md.webp"
+  }
+}
